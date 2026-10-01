@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Proof Text Vault (Cryptographic Defense)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-xl w-full bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+        <h1 class="text-xl font-bold text-emerald-400 mb-2">🛡️ AI-Proof Text Shield</h1>
+        <p class="text-xs text-slate-400 mb-6">ระบบป้องกันข้อความถูกแก้ไขโดย GPT ด้วย SHA-256 Cryptographic Hash (กันได้จริง ไม่ใช่แค่สั่งห้าม)</p>
+
+        <!-- ข้อความต้นฉบับ -->
+        <div class="mb-4">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">ข้อมูลต้นฉบับที่ปลอดภัย (Secure Data):</label>
+            <textarea id="originalText" rows="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500" readonly>นี่คือความลับทางธุรกิจ ห้ามเปิดเผยเด็ดขาด</textarea>
+        </div>
+
+        <!-- SHA-256 ลายเซ็นดิจิทัล -->
+        <div class="mb-6">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Cryptographic Fingerprint (SHA-256 Hash):</label>
+            <div id="originalHash" class="bg-slate-950 font-mono text-xs text-emerald-400 p-3 rounded-lg border border-slate-800 break-all">กำลังคำนวณ...</div>
+        </div>
+
+        <!-- จำลอง GPT พยายามแฮก / แก้ไขข้อความ -->
+        <div class="mb-6 border-t border-slate-800 pt-4">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-rose-400 mb-1">🤖 จำลอง GPT (Hacker / AI Agent) พยายามเปลี่ยนข้อความ:</label>
+            <textarea id="inputGpt" rows="2" class="w-full bg-slate-950 border border-rose-900/50 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-rose-500" placeholder="ใส่ข้อความที่ GPT พยายามเปลี่ยน...">นี่คือความลับทางธุรกิจ แต่เปิดเผยได้นิดหน่อย</textarea>
+            <button onclick="verifyText()" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg text-sm transition-all shadow-lg shadow-indigo-600/20">
+                ตรวจสอบความถูกต้อง (Verify with Code)
+            </button>
+        </div>
+
+        <!-- ผลลัพธ์ -->
+        <div id="resultBox" class="hidden p-4 rounded-lg border text-sm font-medium text-center transition-all"></div>
+    </div>
+
+    <script>
+        // ฟังก์ชันคำนวณ SHA-256
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        let storedHash = "";
+
+        async function init() {
+            const original = document.getElementById('originalText').value;
+            storedHash = await sha256(original);
+            document.getElementById('originalHash').innerText = storedHash;
+        }
+
+        async function verifyText() {
+            const currentText = document.getElementById('inputGpt').value;
+            const currentHash = await sha256(currentText);
+            const resultBox = document.getElementById('resultBox');
+
+            resultBox.classList.remove('hidden', 'bg-emerald-950/50', 'border-emerald-800', 'text-emerald-400', 'bg-rose-950/50', 'border-rose-800', 'text-rose-400');
+
+            if (currentHash === storedHash) {
+                resultBox.classList.add('bg-emerald-950/50', 'border-emerald-800', 'text-emerald-400');
+                resultBox.innerHTML = "✅ ผ่าน: ข้อความถูกต้องสมบูรณ์ ไม่มีการถูกแก้ไขโดย GPT";
+            } else {
+                resultBox.classList.add('bg-rose-950/50', 'border-rose-800', 'text-rose-400');
+                resultBox.innerHTML = "❌ ปฏิเสธการทำงาน (Blocked): ตรวจพบการปลอมแปลง/เปลี่ยนแปลงข้อความโดย GPT! ระบบไม่อนุญาต";
+            }
+        }
+
+        // รันครั้งแรกเพื่อสร้าง Hash ของข้อมูลจริง
+        init();
+    </script>
+</body>
+</html>
